@@ -1,0 +1,62 @@
+---
+name: 'YAML Lint'
+description: 'Validate YAML syntax using yamllint'
+author: 'Khiem Doan'
+
+inputs:
+  files:
+    description: 'Files or directories to lint'
+    required: false
+    default: '.'
+  config_file:
+    description: 'Path to custom configuration'
+    required: false
+  config_data:
+    description: 'Custom configuration (as YAML source)'
+    required: false
+  format:
+    description: 'Format for parsing output [parsable,standard,colored,github,auto]'
+    required: false
+    default: "parsable"
+  strict:
+    description: 'Return non-zero exit code on warnings as well as errors'
+    required: false
+    default: "false"
+  no_warnings:
+    description: 'Output only error level problems'
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        python-version: '3.14t'
+
+    - name: Create virtual environment
+      shell: bash
+      run: uv venv
+
+    - name: Install yamllint
+      shell: bash
+      run: uv pip install yamllint==1.37.1
+
+    - name: Lint YAML files
+      shell: bash
+      run: |
+        options=(--format "${{ inputs.format }}")
+        if [ "${{ inputs.strict }}" = "true" ]; then
+          options+=(--strict)
+        fi
+        if [ "${{ inputs.no_warnings }}" = "true" ]; then
+          options+=(--no-warnings)
+        fi
+        if [ -n "${{ inputs.config_file }}" ]; then
+          options+=(--config-file "${{ inputs.config_file }}")
+        fi
+        if [ -n "${{ inputs.config_data }}" ]; then
+          options+=(--config-data "${{ inputs.config_data }}")
+        fi
+        uv run python -m yamllint "${options[@]}" "${{ inputs.files }}"
