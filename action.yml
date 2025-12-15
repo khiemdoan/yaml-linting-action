@@ -2,6 +2,9 @@
 name: 'YAML Linting'
 description: 'Validate YAML syntax using yamllint'
 author: 'Khiem Doan'
+branding:
+  icon: 'check-circle'
+  color: 'green'
 
 inputs:
   files:
